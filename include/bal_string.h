@@ -27,6 +27,8 @@ Bool BStringContains(const PBString str, const PBString cmpr);
 Bool BStringContainsA(const PBString str, const Char word);
 PBString BStringConcat(const PBString first, const PBString second);
 PBString BStringConcatA(const PBString list, const ULong count);
+Long BStringFirst(const PBString str, const PBString frt);
+Long BStringFirstA(const PBString str, const Char frt);
 void BStringAppend(PBString str, const PBString apnd);
 void BStringAppendA(PBString str, Char apnd);
 void BStringAppendB(PBString str, PChar apnd);

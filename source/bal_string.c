@@ -1,12 +1,13 @@
 #include "bal_string.h"
 #include <malloc.h>
-#include <memory.h>
+#include <string.h>
 #define BSTRING_DEFAULT_CAPACITY 8
 #define BSTRING_DEFAULT_CAPACITY_ADD 6
 #define LOCAL_FUNCTION static
 #define BSTRING_SIZE sizeof(BString)
 
 Bool LOCAL_FUNCTION LF_StrCmpr(const restrict PChar first, const restrict PChar second, const ULong length);
+Bool LOCAL_FUNCTION LF_StrCmprA(const restrict PChar first, const restrict PChar second, const ULong len, const ULong len1, const ULong len2);
 void LOCAL_FUNCTION LF_UnsafeBStringAppend(restrict PBString str, restrict PBString apnd);
 ULong LOCAL_FUNCTION LF_StrLength(const restrict PChar cstr);
 
@@ -154,18 +155,16 @@ Bool BStringContains(const restrict PBString str, const restrict PBString cmpr)
         return 0;
     if (_len == _sLen)
         return LF_StrCmpr(str->ptr, cmpr->ptr, _len);
-    _sLen -= _len;
+    _sLen -= _len - 1;
+    const ULong _a = (_len * CHAR_SIZE) / sizeof(ULong);
+    const ULong _b = (_len * CHAR_SIZE) % sizeof(ULong) / CHAR_SIZE;
+
+    const restrict PChar _ptr1 = str->ptr;
+    const restrict PChar _ptr2 = cmpr->ptr;
     for (int x = 0; x < _sLen; x++)
     {
-        for (int y = 0; y < _len; y++)
-        {
-            if (str->ptr[x] != cmpr->ptr[y])
-            {
-                goto _e;
-            }
-        }
-        return 1;
-        _e:;
+        if (LF_StrCmprA(_ptr1 + CHAR_SIZE * x, _ptr2, _len, _a, _b))
+            return 1;
     }
     return 0;
 }
@@ -191,7 +190,7 @@ PBString BStringConcat(const PBString first, const PBString second)
     const Char* _ptr = malloc((_fLen + _sLen) * CHAR_SIZE);
     memmove(_ptr, first->ptr, _fLen * CHAR_SIZE);
     memmove(_ptr + _fLen * CHAR_SIZE, second->ptr, _sLen * CHAR_SIZE);
-    return PBStringCreateB(_ptr, _fLen + _sLen);
+    return BStringCreateB(_ptr, _fLen + _sLen);
 }
 
 PBString BStringConcatA(const restrict PBString list, const ULong count)
@@ -206,7 +205,7 @@ PBString BStringConcatA(const restrict PBString list, const ULong count)
     ULong _len = _s->len;
     for (int x = 2; x < count; x++)
     {
-        _len += _s[x].len;
+        _len += list[x].len;
     }
     BStringResetCapacity(_s, _len);
     for (int x = 2; x < count; x++)
@@ -216,8 +215,32 @@ PBString BStringConcatA(const restrict PBString list, const ULong count)
     return 0;
 }
 
+Long BStringFirst(const restrict PBString str, const restrict PBString frt)
+{
+    if (str->len == 0 || frt->len > str->len)
+        return -1;
+    if (str->len == frt->len)
+        return LF_StrCmpr(str->ptr, frt->ptr, str->len) - 1;
+    ULong _uLen = frt->len;
+    ULong _len = str->len - _uLen + 1;
+    const restrict PChar _ptr1 = str->ptr;
+    const restrict PChar _ptr2 = frt->ptr;
+    
+    const ULong _a = (_uLen * CHAR_SIZE) / sizeof(ULong);
+    const ULong _b = (_uLen * CHAR_SIZE) % sizeof(ULong) / CHAR_SIZE;
+
+    for (int x = 0; x < _len; x++) 
+    {
+        if (LF_StrCmprA(_ptr1 + CHAR_SIZE * x, _ptr2, _uLen, _a, _b))
+            return 1;
+    }
+    return 0;
+}
+
 void BStringAppend(restrict PBString str, const restrict PBString apnd)
 {
+    if (str->capacity == 0)
+        return;
     if (str->capacity - str->len >= apnd->len)
     {
         memmove(str->ptr + CHAR_SIZE * str->len, apnd->ptr, apnd->len * CHAR_SIZE);
@@ -232,6 +255,8 @@ void BStringAppend(restrict PBString str, const restrict PBString apnd)
 
 void BStringAppendA(restrict PBString str, Char apnd)
 {
+    if (str->capacity == 0)
+        return;
     if (str->capacity - str->len >= CHAR_SIZE)
     {
         str->ptr[str->len] = apnd;
@@ -246,6 +271,8 @@ void BStringAppendA(restrict PBString str, Char apnd)
 
 void BStringAppendB(restrict PBString str, restrict PChar apnd)
 {
+    if (str->capacity == 0)
+        return;
     ULong _len = LF_StrLength(apnd);
     if (str->capacity - str->len >= _len)
     {
@@ -261,6 +288,8 @@ void BStringAppendB(restrict PBString str, restrict PChar apnd)
 
 void BStringClear(restrict PBString str)
 {
+    if (str->capacity == 0)
+        return;
     str->capacity = BSTRING_DEFAULT_CAPACITY;
     str->ptr = realloc(str->ptr, BSTRING_DEFAULT_CAPACITY * CHAR_SIZE);
     str->len = 0;
@@ -269,8 +298,8 @@ void BStringClear(restrict PBString str)
 PBString BStringClone(const restrict PBString str)
 {
     PBString _str = malloc(sizeof(BString));
-    _str->ptr = malloc(str->capacity * CHAR_SIZE);
-    _str->capacity = str->capacity;
+    _str->ptr = malloc((str->len + BSTRING_DEFAULT_CAPACITY_ADD) * CHAR_SIZE);
+    _str->capacity = str->len + BSTRING_DEFAULT_CAPACITY_ADD;
     _str->len = str->len;
     memmove(_str->ptr, str->ptr, _str->len);
     return _str;
@@ -278,6 +307,8 @@ PBString BStringClone(const restrict PBString str)
 
 void BStringDestroy(const restrict PBString str)
 {
+    if (str->capacity == 0)
+        return;
     free(str->ptr);
     free(str);
 }
@@ -292,6 +323,21 @@ Bool LOCAL_FUNCTION LF_StrCmpr(const restrict PChar first, const restrict PChar 
             return 0;
     }
     for (int x = length - _b; x < length; x++)
+    {
+        if (first[x] != second[x])
+            return 0;
+    }
+    return 1;
+}
+
+Bool LOCAL_FUNCTION LF_StrCmprA(const restrict PChar first, const restrict PChar second, const ULong len, const ULong len1, const ULong len2)
+{
+    for (int x = 0; x < len1; x++)
+    {
+        if (((ULong*)first)[x] != ((ULong*)second)[x])
+            return 0;
+    }
+    for (int x = len - len2; x < len; x++)
     {
         if (first[x] != second[x])
             return 0;

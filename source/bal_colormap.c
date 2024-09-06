@@ -9,9 +9,9 @@ Int RoundInt(Float number)
     return (Int)(number + .5f);
 }
 
-ColorMap* ColorMapCreate(const Int width, const Int height)
+PColorMap ColorMapCreate(const Int width, const Int height)
 {
-    ColorMap* _map = malloc(sizeof(ColorMap));
+    PColorMap _map = malloc(sizeof(ColorMap));
     _map->width = width;
     _map->height = height;
     _map->linearSize = width * height;
@@ -25,13 +25,13 @@ ColorMap* ColorMapCreate(const Int width, const Int height)
     return _map;
 }
 
-void ColorMapDestroy(const ColorMap* colorMap)
+void ColorMapDestroy(const PColorMap colorMap)
 {
     free(colorMap->colors);
     free(colorMap);
 }
 
-void ColorMapResize(ColorMap* colorMap, const Int newWidth, const Int newHeight)
+void ColorMapResize(PColorMap colorMap, const Int newWidth, const Int newHeight)
 {
     Int _nW;
     Int _nH;
@@ -66,7 +66,7 @@ void ColorMapResize(ColorMap* colorMap, const Int newWidth, const Int newHeight)
     free(__);
 }
 
-Int ColorMapSetPixel(const register ColorMap* colorMap, const register Point2D position, const register Color color)
+Int ColorMapSetPixel(const register PColorMap colorMap, const register Point2D position, const register Color color)
 {
     if (colorMap == 0)
         return 0;
@@ -78,7 +78,7 @@ Int ColorMapSetPixel(const register ColorMap* colorMap, const register Point2D p
     return 0;
 }
 
-Int ColorMapSetPixelA(const register ColorMap* colorMap, const register Int x, const register Int y, const register Color color)
+Int ColorMapSetPixelA(const register PColorMap colorMap, const register Int x, const register Int y, const register Color color)
 {
     if (colorMap == 0)
         return 0;
@@ -90,7 +90,7 @@ Int ColorMapSetPixelA(const register ColorMap* colorMap, const register Int x, c
     return 0;
 }
 
-Int ColorMapGetPixel(const ColorMap* colorMap, const Point2D position, PColor colorOut)
+Int ColorMapGetPixel(const PColorMap colorMap, const Point2D position, PColor colorOut)
 {
     if (colorMap == 0)
         return 0;
@@ -102,7 +102,7 @@ Int ColorMapGetPixel(const ColorMap* colorMap, const Point2D position, PColor co
     return 0;
 }
 
-Int ColorMapGetPixelA(const ColorMap* colorMap, const Int x, const Int y, PColor colorOut)
+Int ColorMapGetPixelA(const PColorMap colorMap, const Int x, const Int y, PColor colorOut)
 {
     if (colorMap == 0)
         return 0;
@@ -114,7 +114,7 @@ Int ColorMapGetPixelA(const ColorMap* colorMap, const Int x, const Int y, PColor
     return 0;
 }
 
-void ColorMapDrawLine(const ColorMap* colorMap, Point2D start, Point2D end, const Color color)
+void ColorMapDrawLine(const PColorMap colorMap, Point2D start, Point2D end, const Color color)
 {
     Int _a = end.x - start.x;
     Int _b = end.y - start.y;
@@ -161,12 +161,12 @@ void ColorMapDrawLine(const ColorMap* colorMap, Point2D start, Point2D end, cons
     }
 }
 
-void ColorMapDrawLineA(const ColorMap* colorMap, Int startX, Int startY, Int endX, Int endY, const Color color)
+void ColorMapDrawLineA(const PColorMap colorMap, Int startX, Int startY, Int endX, Int endY, const Color color)
 {
     ColorMapDrawLine(colorMap, Point2DCreate(startX, startY), Point2DCreate(endX, endY), color);
 }
 
-void ColorMapClear(const ColorMap* colorMap)
+void ColorMapClear(const PColorMap colorMap)
 {
     for (Int x = 0; x < colorMap->width; x++)
     {

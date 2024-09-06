@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "bal_point.h": "c",
+        "malloc.h": "c"
+    }
+}
