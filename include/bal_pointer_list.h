@@ -6,16 +6,22 @@
 typedef struct PointerList_t
 {
     pvoid* ptr;
-    Int capacity;
-    Int count;
+    ULong capacity;
+    ULong count;
 } PointerList, *PPointerList;
 
-PPointerList PListCreate(Int capacity);
-void PListAdd(PPointerList list, pvoid ptr);
-void PListRemoveAt(PPointerList list, Int index);
-void PListRemoveAtA(PPointerList list, Int index);
-void PListSetIndex(PPointerList list, Int index, pvoid ptr);
-void PListDestroy(PPointerList ptr);
-void PListDestroyAndClear(PPointerList ptr);
+typedef Int(*PointerListForEach)(pvoid);
+
+PPointerList PListCreate(ULong capacity);
+void PListAdd(PPointerList list, const pvoid ptr);
+Long PListFirst(const PPointerList list, const pvoid cmpr);
+void PListForEach(const PPointerList list, const PointerListForEach forEach);
+void PListRemoveAt(PPointerList list, const ULong index);
+void PListRemoveAtA(PPointerList list, const ULong index);
+pvoid PListGetIndex(const PPointerList list, const ULong index);
+void PListSetIndex(PPointerList list, const ULong index, const pvoid ptr);
+PPointerList PListClone(const PPointerList list);
+void PListDestroy(const PPointerList ptr);
+void PListDestroyAndClear(const PPointerList ptr);
 
 #endif

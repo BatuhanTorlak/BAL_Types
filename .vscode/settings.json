@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "bal_point.h": "c",
-        "malloc.h": "c"
+        "malloc.h": "c",
+        "stdio.h": "c",
+        "bal_types.h": "c"
     }
 }

@@ -5,9 +5,12 @@
 #define BSTRING_DEFAULT_CAPACITY_ADD 6
 #define LOCAL_FUNCTION static
 #define BSTRING_SIZE sizeof(BString)
+#define CHECK_IS_NOT_EMPTY_WORD(x) ((x) != ' ' && (x) != '\t' && (x) != '\n' && (x) != '\r')
+#define CHECK_IS_EMPTY_WORD(x) ((x) != ' ' && (x) != '\t' && (x) != '\n' && (x) != '\r')
 
 Bool LOCAL_FUNCTION LF_StrCmpr(const restrict PChar first, const restrict PChar second, const ULong length);
 Bool LOCAL_FUNCTION LF_StrCmprA(const restrict PChar first, const restrict PChar second, const ULong len, const ULong len1, const ULong len2);
+Bool LOCAL_FUNCTION LF_IsEmptyArea(const restrict PChar str, ULong start, const ULong end);
 void LOCAL_FUNCTION LF_UnsafeBStringAppend(restrict PBString str, restrict PBString apnd);
 ULong LOCAL_FUNCTION LF_StrLength(const restrict PChar cstr);
 
@@ -109,6 +112,16 @@ ULong BStringLength(const PBString str)
     return str->len;
 }
 
+Char BStringGet(const restrict PBString str, const ULong index)
+{
+    return str->ptr[index];
+}
+
+void BStringSet(restrict PBString str, const ULong index, Char chr)
+{
+    str->ptr[index] = chr;
+}
+
 Bool BStringStartsWith(const restrict PBString str, const restrict PBString cmpr)
 {
     if (str->len < cmpr->len)
@@ -183,6 +196,22 @@ Bool BStringContainsA(const restrict PBString str, const Char word)
     return 0;
 }
 
+Bool BStringIsEmpty(const restrict PBString str)
+{
+    const restrict PChar _ptr = str->ptr;
+    ULong _len = str->len - 1;
+    if (_len == -1)
+        return 1;
+    for (; _len; _len--)
+    {
+        if (CHECK_IS_NOT_EMPTY_WORD(_ptr[_len]))
+            return 0;
+    }
+    if (CHECK_IS_NOT_EMPTY_WORD(_ptr[0]))
+        return 0;
+    return 1;
+}
+
 PBString BStringConcat(const PBString first, const PBString second)
 {
     const ULong _fLen = first->len;
@@ -215,16 +244,38 @@ PBString BStringConcatA(const restrict PBString list, const ULong count)
     return 0;
 }
 
+PBString BStringSubstring(const PBString str, const ULong start, const ULong length)
+{
+    return BStringCreateB(str->ptr + start * CHAR_SIZE, length);
+}
+
+PBString BStringSubstringA(const PBString str, const ULong start)
+{
+    return BStringCreateB(str->ptr + start * CHAR_SIZE, str->len - start);
+}
+
+PBString BStringSubstringB(const PBString str, const ULong end)
+{
+    return BStringCreateB(str->ptr, end);
+}
+
+PBString BStringSubstringC(const PBString str, const ULong start, const ULong end)
+{
+    return BStringCreateB(str->ptr + start * CHAR_SIZE, end - start + 1);
+}
+
 Long BStringFirst(const restrict PBString str, const restrict PBString frt)
 {
-    if (str->len == 0 || frt->len > str->len)
-        return -1;
-    if (str->len == frt->len)
-        return LF_StrCmpr(str->ptr, frt->ptr, str->len) - 1;
     ULong _uLen = frt->len;
-    ULong _len = str->len - _uLen + 1;
+    ULong _len = str->len;
     const restrict PChar _ptr1 = str->ptr;
     const restrict PChar _ptr2 = frt->ptr;
+
+    if (_len == 0 || _uLen > _len)
+        return -1;
+    if (_len == _uLen)
+        return LF_StrCmpr(_ptr1, _ptr2, _len) - 1;
+    _len -= _uLen + 1;
     
     const ULong _a = (_uLen * CHAR_SIZE) / sizeof(ULong);
     const ULong _b = (_uLen * CHAR_SIZE) % sizeof(ULong) / CHAR_SIZE;
@@ -232,9 +283,127 @@ Long BStringFirst(const restrict PBString str, const restrict PBString frt)
     for (int x = 0; x < _len; x++) 
     {
         if (LF_StrCmprA(_ptr1 + CHAR_SIZE * x, _ptr2, _uLen, _a, _b))
-            return 1;
+            return x;
     }
-    return 0;
+    return -1;
+}
+
+Long BStringFirstA(const restrict PBString str, const Char chr)
+{
+    ULong _len = str->len;
+    if (_len == 0)
+        return -1;
+    for (int x = 0; x < _len; x++)
+    {
+        if (str->ptr[x] == chr)
+            return x;
+    }
+    return -1;
+}
+
+void BStringTrim(const restrict PBString str)
+{
+    ULong _len = str->len;
+    ULong _trimStart = 0;
+    ULong _trimEnd = 0;
+    const restrict PChar _ptr = str->ptr;
+    if (_len == 0)
+        return;
+    for (int x = 0; x < _len; x++)
+    {
+        if (CHECK_IS_NOT_EMPTY_WORD(_ptr[x]))
+        {
+            break;
+        }
+        _trimStart++;
+    }
+    for (int x = _trimStart; x < _len; x++)
+    {
+        if (CHECK_IS_NOT_EMPTY_WORD(_ptr[x]))
+        {
+            _trimEnd = 0;
+            continue;
+        }
+        _trimEnd++;
+    }
+    _len -= _trimEnd + _trimStart;
+    if (!(_trimStart | _trimEnd))
+        return;
+    if (!_len)
+    {
+        str->len = 0;
+        return;
+    }
+    restrict PChar _char = malloc(CHAR_SIZE * str->capacity);
+    memmove(_char, _ptr + _trimStart * CHAR_SIZE, _len * CHAR_SIZE);
+    str->len = _len;
+    str->ptr = _char;
+    free(_ptr);
+}
+
+void BStringTrimStart(const restrict PBString str)
+{
+    ULong _len = str->len;
+    ULong _start = 0;
+    const restrict PChar _ptr = str->ptr;
+    if (_len == 0)
+        return;
+    for (int x = 0; x < _len; x++)
+    {
+        if (CHECK_IS_NOT_EMPTY_WORD(_ptr[x]))
+        {
+            break;
+        }
+        _start++;
+    }
+    _len -= _start;
+    if (!_start)
+        return;
+    if (!_len)
+    {
+        str->len = 0;
+        return;
+    }
+    memmove(_ptr, _ptr + _start * CHAR_SIZE, _len * CHAR_SIZE);
+    str->len = _len;
+    free(_ptr);
+}
+
+void BStringTrimEnd(const restrict PBString str)
+{
+    const restrict PChar _ptr = str->ptr;
+    ULong _len = str->len;
+    ULong _start = 0;
+    if (_len == 0)
+        return;
+    for (int x = _len - 1; x >= 0; x--)
+    {
+        if (CHECK_IS_NOT_EMPTY_WORD(_ptr[x]))
+        {
+            break;
+        }
+        _start++;
+    }
+    _len -= _start;
+    if (!_start)
+        return;
+    if (!_len)
+    {
+        str->len = 0;
+        return;
+    }
+    str->len = _len;
+}
+
+void BStringReplace(const restrict PBString str, const Char replaced, const Char replacing)
+{
+    restrict PChar _ptr = str->ptr;
+    const ULong _len = str->len;
+    for (int x = 0; x < _len; x++)
+    {
+        if (_ptr[x] == replaced)
+            _ptr[x] = replacing;
+    }
 }
 
 void BStringAppend(restrict PBString str, const restrict PBString apnd)
@@ -295,6 +464,41 @@ void BStringClear(restrict PBString str)
     str->len = 0;
 }
 
+PPointerList BStringSplit(const restrict PBString str, const Char wrd)
+{
+    if (str->len == 0)
+        return 0;
+    const restrict PPointerList ptrList = PListCreate(6);
+    const restrict PChar _ptr = str->ptr;
+    const ULong _len = str->len;
+    ULong _start = 0;
+    for (int x = 0; x < _len; x++)
+    {
+        if (_ptr[x] == wrd)
+        {
+            if (LF_IsEmptyArea(_ptr, _start, x))
+            {
+                _start = x + 1;
+                continue;
+            }
+            const restrict PBString _str = BStringSubstringC(str, _start, x - 1);
+            PListAdd(ptrList, _str);
+            _start = x + 1;
+        }
+    }
+    if (_start != _len && !LF_IsEmptyArea(_ptr, _start, _len - 1))
+    {
+        const restrict PBString _str = BStringSubstringA(str, _start);
+        PListAdd(ptrList, _str);
+    }
+    if (ptrList->count)
+    {
+        return ptrList;
+    }
+    PListDestroy(ptrList);
+    return 0;
+}
+
 PBString BStringClone(const restrict PBString str)
 {
     PBString _str = malloc(sizeof(BString));
@@ -345,6 +549,22 @@ Bool LOCAL_FUNCTION LF_StrCmprA(const restrict PChar first, const restrict PChar
     return 1;
 }
 
+Bool LOCAL_FUNCTION LF_IsEmptyArea(const restrict PChar str, ULong start, const ULong end)
+{
+    if (start == end)
+    {
+        return 1;
+    }
+    for (; start < end; start++)
+    {
+        if (CHECK_IS_NOT_EMPTY_WORD(str[start]))
+        {
+            return 0;
+        }
+    }
+    return 1;
+}
+
 void LOCAL_FUNCTION LF_UnsafeBStringAppend(restrict PBString str, restrict PBString apnd)
 {
     memmove(str->ptr + str->len * CHAR_SIZE, apnd->ptr, apnd->len * CHAR_SIZE);
@@ -354,6 +574,6 @@ void LOCAL_FUNCTION LF_UnsafeBStringAppend(restrict PBString str, restrict PBStr
 ULong LOCAL_FUNCTION inline LF_StrLength(const restrict register PChar cstr)
 {
     register ULong _len = 0;
-    while (cstr[_len++]);
+    while (cstr[_len]) _len++;
     return _len;
 }
