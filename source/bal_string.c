@@ -486,7 +486,7 @@ PPointerList BStringSplit(const restrict PBString str, const Char wrd)
             _start = x + 1;
         }
     }
-    if (_start != _len && !LF_IsEmptyArea(_ptr, _start, _len - 1))
+    if (!LF_IsEmptyArea(_ptr, _start, _len))
     {
         const restrict PBString _str = BStringSubstringA(str, _start);
         PListAdd(ptrList, _str);
