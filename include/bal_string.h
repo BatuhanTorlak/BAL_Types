@@ -10,6 +10,8 @@ typedef struct BString_t
     ULong capacity;
 }BString, *PBString;
 
+void BalMemMove(PVoid source, PVoid dest, ULong size);
+
 PBString BStringCreate();
 PBString BStringCreateA(const PChar ptr);
 PBString BStringCreateB(const PChar ptr, const ULong length);
@@ -44,6 +46,12 @@ void BStringReplace(const PBString str, const Char replaced, const Char replacin
 void BStringAppend(PBString str, const PBString apnd);
 void BStringAppendA(PBString str, Char apnd);
 void BStringAppendB(PBString str, PChar apnd);
+void BStringAppendC(PBString str, PChar apnd, const ULong length);
+void BStringCopy(const PBString from, const PBString to);
+void BStringCopyA(const PBString from, const PBString to, const ULong length);
+void BStringCopyB(const PBString from, const PBString to, const ULong startFrom, const ULong startTo, const ULong length);
+void BStringCopyC(const PByte from, PByte to, const ULong length);
+void BStringCopyD(const PByte from, PByte to, const ULong length);
 PPointerList BStringSplit(const PBString str, const Char wrd);
 //PPointerList BStringSplitA(const PBString str, const PChar wrdList, const ULong length);
 //PPointerList BStringSplitB(const PBString str, const PPointerList wrdList);

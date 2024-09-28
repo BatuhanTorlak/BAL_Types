@@ -1,4 +1,5 @@
 #include <bal_string.h>
+#include <bal_memory.h>
 #include <stdio.h>
 
 Int MyForEach(PBString str)
@@ -9,11 +10,17 @@ Int MyForEach(PBString str)
     return 0;
 }
 
-int main()
+Int main(const PPointerList args)
 {
-    PChar _char = (pchar)"test;abi";
+    if (args != 0)
+        printf("test count: %i\n", args->count);
+    PChar _char = (PChar)"    test;t t t  ";
     PBString str = BStringCreateA(_char);
+    printf("%s\n", str->ptr);
+    BStringTrim(str);
+    printf("%s\n", str->ptr);
     PPointerList list = BStringSplit(str, ';');
+    printf("0x%p\n", list);
     if (list)
     {
         PListForEach(list, (PointerListForEach)MyForEach);
