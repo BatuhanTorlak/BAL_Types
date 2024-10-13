@@ -1,9 +1,9 @@
-#ifndef BSTRING_H
-#define BSTRING_H
+#ifndef BSTRING16_H
+#define BSTRING16_H
 #include "bal_types.h"
 #include "bal_pointer_list.h"
 
-typedef struct BString_t
+typedef struct BString16_t
 {
     PChar16 ptr;
     ULong len;

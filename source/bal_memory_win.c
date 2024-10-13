@@ -17,6 +17,14 @@ void BalMemoryInit()
 #endif
 }
 
+void BalMemoryDeInit()
+{
+#ifdef BAL_MEM_KERNEL
+#else
+    HeapDestroy(LV_processHeap);
+#endif
+}
+
 pvoid BalAlloc(ULong size)
 {
 #ifdef BAL_MEM_KERNEL

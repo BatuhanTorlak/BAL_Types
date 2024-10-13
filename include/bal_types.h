@@ -12,8 +12,8 @@ typedef int long long           Long, Int64, int64, bool64, Long,
                                 *PLong, *PInt64, *pint64, *pbool64;
 
 
-typedef int                     Int, Int32, int32, bool32, Bool, 
-                                *PInt, *PInt32, *pint32, *pbool32, *PBool;
+typedef int                     Int, Int32, int32, bool32, Bool, Error, 
+                                *PInt, *PInt32, *pint32, *pbool32, *PBool, *PError;
 
 
 typedef unsigned int            UInt, UInt32, uint32, 

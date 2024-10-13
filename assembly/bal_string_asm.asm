@@ -13,9 +13,9 @@ BalMemMove:
 .g2:
     test r8, r8
     jz .ge
+    dec r8
     mov al, [rcx+r8]
     mov [rdx+r8], al
-    dec r8
     jmp .g2
 .ge:
     ret

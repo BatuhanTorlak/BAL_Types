@@ -18,6 +18,8 @@ Long PListFirst(const PPointerList list, const pvoid cmpr);
 void PListForEach(const PPointerList list, const PointerListForEach forEach);
 void PListRemoveAt(PPointerList list, const ULong index);
 void PListRemoveAtA(PPointerList list, const ULong index);
+ULong PListSize(const PPointerList list);
+ULong PListCapacity(const PPointerList list);
 pvoid PListGetIndex(const PPointerList list, const ULong index);
 void PListSetIndex(PPointerList list, const ULong index, const pvoid ptr);
 PPointerList PListClone(const PPointerList list);

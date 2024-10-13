@@ -1,7 +1,6 @@
 #include "bal_string.h"
 #include "bal_defs.h"
 #include <bal_memory.h>
-#include <stdio.h>
 #define BSTRING_DEFAULT_CAPACITY 8
 #define BSTRING_DEFAULT_CAPACITY_ADD 6
 #define BSTRING_SIZE sizeof(BString)
@@ -101,13 +100,9 @@ PBString BStringCreateD(const ULong capacity)
 
 BString BStringCreateLocal(const restrict PChar ptr)
 {
-    ULong _len = 0;
-
-    while (ptr[_len] != 0) _len++;
-
     const BString _str = {
         .ptr = ptr,
-        .len = _len,
+        .len = LF_StrLength(ptr),
         .capacity = 0
     };
 
@@ -531,9 +526,9 @@ void BStringCopyB(const PBString from, const PBString to, const ULong startFrom,
     BStringCopyD(from->ptr + startFrom, to->ptr + startTo, length);
 }
 
-void BStringCopyC(const PByte from, restrict PByte to, const ULong length)
+void BStringCopyC(const PChar from, restrict PChar to, const ULong length)
 {
-    if (length <= 0)
+    if (length == 0)
         return;
     for (int x = 0; x < length; x++)
     {
@@ -543,15 +538,10 @@ void BStringCopyC(const PByte from, restrict PByte to, const ULong length)
 
 void BStringCopyD(const PByte from, restrict PByte to, const ULong length)
 {
-    if (length <= 0)
+    if (length == 0)
         return;
-    if (length < 32)
-    {
-        BStringCopyC(from, to, length);
-        return;
-    }
     BalMemMove(from, to, length);
-    return;
+    /*return;
     const ULong _64 = length / sizeof(IntVector2);
     const ULong _8 = length % sizeof(IntVector2);
     const PIntVector2 _ptrF = (PIntVector2)from;
@@ -563,7 +553,7 @@ void BStringCopyD(const PByte from, restrict PByte to, const ULong length)
     for (ULong x = 1; x <= _8; x++)
     {
         to[length - x] = from[length - x];
-    }
+    }*/
 }
 
 PPointerList BStringSplit(const restrict PBString str, const Char wrd)
@@ -607,7 +597,7 @@ PBString BStringClone(const restrict PBString str)
     _str->ptr = BalAlloc((str->len + BSTRING_DEFAULT_CAPACITY_ADD) * CHAR_SIZE);
     _str->capacity = str->len + BSTRING_DEFAULT_CAPACITY_ADD;
     _str->len = str->len;
-    BStringCopyD(_str->ptr, str->ptr, _str->len);
+    BStringCopyD(str->ptr, _str->ptr, _str->len * CHAR_SIZE);
     return _str;
 }
 
@@ -669,7 +659,7 @@ Bool LOCAL_FUNCTION LF_IsEmptyArea(const restrict PChar str, ULong start, const 
 
 void LOCAL_FUNCTION LF_UnsafeBStringAppend(restrict PBString str, restrict PBString apnd)
 {
-    BStringCopyD(str->ptr + str->len * CHAR_SIZE, apnd->ptr, apnd->len * CHAR_SIZE);
+    BStringCopyD(apnd->ptr, str->ptr + str->len * CHAR_SIZE, apnd->len * CHAR_SIZE);
     str->len += apnd->len;
 }
 

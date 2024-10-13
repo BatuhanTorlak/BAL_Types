@@ -57,27 +57,39 @@ void PListForEach(const PPointerList list, const PointerListForEach forEach)
 
 void PListRemoveAt(restrict PPointerList list, const ULong index)
 {
+    ULong _i = list->count - index - 1;
+    const PVoid* _ptr = list->ptr + SIZING(index);
+    BStringCopyD((PByte)(_ptr), (PByte)(_ptr - POINTER_SIZE), SIZING(_i));
     if (list->count == list->capacity - PTR_LIST_DEFAULT_CAPACITY - 2)
     {
         list->capacity -= 6;
         list->ptr = BalReAlloc(list->ptr, SIZING(list->capacity));
     }
-    int _i = list->count - index - 1;
-    BStringCopyD((PByte)(list->ptr + POINTER_SIZE), (PByte)(list->ptr), SIZING(_i));
     list->count--;
 }
 
 void PListRemoveAtA(restrict PPointerList list, const ULong index)
 {
+    ULong _i = list->count - index - 1;
+    const PVoid* _ptr = list->ptr + SIZING(index);
+    BalFree(list->ptr[index]);
+    BStringCopyD((PByte)(_ptr), (PByte)(_ptr - POINTER_SIZE), SIZING(_i));
     if (list->count == list->capacity - PTR_LIST_DEFAULT_CAPACITY - 2)
     {
         list->capacity -= 6;
         list->ptr = BalReAlloc(list->ptr, SIZING(list->capacity));
     }
-    BalFree(list->ptr[index]);
-    int _i = list->count - index - 1;
-    BStringCopyD((PByte)(list->ptr + POINTER_SIZE), (PByte)(list->ptr), SIZING(_i));
     list->count--;
+}
+
+ULong PListSize(const PPointerList list)
+{
+    return list->count;
+}
+
+ULong PListCapacity(const PPointerList list)
+{
+    return list->capacity;
 }
 
 pvoid PListGetIndex(const restrict PPointerList list, const ULong index)
@@ -98,9 +110,9 @@ void PListDestroy(const PPointerList ptr)
 
 void PListDestroyAndClear(const PPointerList ptr)
 {
-    int _c = ptr->count;
-    PVoid* _ptr = ptr->ptr;
-    for (int x = 0; x < _c; x++)
+    const ULong _c = ptr->count;
+    const PVoid* _ptr = ptr->ptr;
+    for (ULong x = 0; x < _c; x++)
     {
         BalFree(_ptr[x]);
     }

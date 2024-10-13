@@ -3,6 +3,7 @@
         "bal_point.h": "c",
         "malloc.h": "c",
         "stdio.h": "c",
-        "bal_types.h": "c"
+        "bal_types.h": "c",
+        "bal_pointer_list.h": "c"
     }
 }

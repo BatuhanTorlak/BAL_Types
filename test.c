@@ -1,6 +1,7 @@
 #include <bal_string.h>
 #include <bal_memory.h>
 #include <stdio.h>
+#define LENGTH 10
 
 Int MyForEach(PBString str)
 {
@@ -14,17 +15,22 @@ Int main(const PPointerList args)
 {
     if (args != 0)
         printf("test count: %i\n", args->count);
-    PChar _char = (PChar)"    test;t t t  ";
+
+    PChar _char = (PChar)"a a a atest;t t t  aaaaaaaasssssssssdddddddd";
+
+    BString _str = BStringCreateLocal(_char);
+
+    PBString __str = BStringClone(&_str);
+
     PBString str = BStringCreateA(_char);
-    printf("%s\n", str->ptr);
     BStringTrim(str);
-    printf("%s\n", str->ptr);
     PPointerList list = BStringSplit(str, ';');
-    printf("0x%p\n", list);
+    
     if (list)
     {
         PListForEach(list, (PointerListForEach)MyForEach);
         PListDestroy(list);
     }
     BStringDestroy(str);
+    BStringDestroy(__str);
 }

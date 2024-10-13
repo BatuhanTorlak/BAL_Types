@@ -1,8 +1,7 @@
 #include "bal_string16.h"
 #include "bal_defs.h"
 #include <bal_memory.h>
-#undef CHAR_SIZE
-#define CHAR_SIZE sizeof(Char16)
+#define CHAR16_SIZE sizeof(Char16)
 #define BSTRING_DEFAULT_CAPACITY 8
 #define BSTRING_DEFAULT_CAPACITY_ADD 6
 #define BSTRING_SIZE sizeof(BString16)
@@ -49,9 +48,9 @@ PBString16 BString16CreateA(const restrict PChar16 ptr)
     const ULong _len = LF_StrLength(ptr);
 
     PBString16 _str = BalAlloc(BSTRING_SIZE);
-    _str->ptr = BalAlloc(CHAR_SIZE * _len);
+    _str->ptr = BalAlloc(CHAR16_SIZE * _len);
 
-    BString16CopyD(ptr, _str->ptr, CHAR_SIZE * _len);
+    BString16CopyD(ptr, _str->ptr, CHAR16_SIZE * _len);
 
     _str->len = _len;
     _str->capacity = _len;
@@ -62,9 +61,9 @@ PBString16 BString16CreateA(const restrict PChar16 ptr)
 PBString16 BString16CreateB(const restrict PChar16 ptr, const ULong length)
 {
     PBString16 _str = BalAlloc(BSTRING_SIZE);
-    _str->ptr = BalAlloc(CHAR_SIZE * length);
+    _str->ptr = BalAlloc(CHAR16_SIZE * length);
 
-    BString16CopyD(ptr, _str->ptr, CHAR_SIZE * length);
+    BString16CopyD(ptr, _str->ptr, CHAR16_SIZE * length);
 
     _str->len = length;
     _str->capacity = length;
@@ -78,9 +77,9 @@ PBString16 BString16CreateC(const restrict PChar16 ptr, const ULong length, cons
     if (capacity < length)
         return 0;
 
-    _str->ptr = BalAlloc(CHAR_SIZE * capacity);
+    _str->ptr = BalAlloc(CHAR16_SIZE * capacity);
 
-    BString16CopyD(ptr, _str->ptr, CHAR_SIZE * length);
+    BString16CopyD(ptr, _str->ptr, CHAR16_SIZE * length);
 
     _str->len = length;
     _str->capacity = capacity;
@@ -90,7 +89,7 @@ PBString16 BString16CreateD(const ULong capacity)
 {
     PBString16 _str = BalAlloc(BSTRING_SIZE);
     
-    _str->ptr = BalAlloc(CHAR_SIZE * capacity);
+    _str->ptr = BalAlloc(CHAR16_SIZE * capacity);
 
     _str->len = 0;
     _str->capacity = capacity;
@@ -128,7 +127,7 @@ void BString16ResetCapacity(restrict PBString16 str, ULong newCapacity)
 {
     if (newCapacity <= str->len)
         newCapacity = str->len;
-    str->ptr = BalReAlloc(str->ptr, newCapacity * CHAR_SIZE);
+    str->ptr = BalReAlloc(str->ptr, newCapacity * CHAR16_SIZE);
     str->capacity = newCapacity;
 }
 
@@ -165,7 +164,7 @@ Bool BString16EndsWith(const restrict PBString16 str, const restrict PBString16 
 {
     if (str->len < cmpr->len)
         return 0;
-    return LF_StrCmpr(str->ptr + CHAR_SIZE * (str->len - cmpr->len), cmpr->ptr, cmpr->len);
+    return LF_StrCmpr(str->ptr + CHAR16_SIZE * (str->len - cmpr->len), cmpr->ptr, cmpr->len);
 }
 
 Bool BString16EndsWithA(const restrict PBString16 str, const Char16 word)
@@ -194,14 +193,14 @@ Bool BString16Contains(const restrict PBString16 str, const restrict PBString16 
     if (_len == _sLen)
         return LF_StrCmpr(str->ptr, cmpr->ptr, _len);
     _sLen -= _len - 1;
-    const ULong _a = (_len * CHAR_SIZE) / sizeof(ULong);
-    const ULong _b = (_len * CHAR_SIZE) % sizeof(ULong) / CHAR_SIZE;
+    const ULong _a = (_len * CHAR16_SIZE) / sizeof(ULong);
+    const ULong _b = (_len * CHAR16_SIZE) % sizeof(ULong) / CHAR16_SIZE;
 
     const restrict PChar16 _ptr1 = str->ptr;
     const restrict PChar16 _ptr2 = cmpr->ptr;
     for (int x = 0; x < _sLen; x++)
     {
-        if (LF_StrCmprA(_ptr1 + CHAR_SIZE * x, _ptr2, _len, _a, _b))
+        if (LF_StrCmprA(_ptr1 + CHAR16_SIZE * x, _ptr2, _len, _a, _b))
             return 1;
     }
     return 0;
@@ -241,9 +240,9 @@ PBString16 BString16Concat(const PBString16 first, const PBString16 second)
 {
     const ULong _fLen = first->len;
     const ULong _sLen = second->len;
-    const Char16* _ptr = BalAlloc((_fLen + _sLen) * CHAR_SIZE);
-    BString16CopyD(_ptr, first->ptr, _fLen * CHAR_SIZE);
-    BString16CopyD(_ptr + _fLen * CHAR_SIZE, second->ptr, _sLen * CHAR_SIZE);
+    const Char16* _ptr = BalAlloc((_fLen + _sLen) * CHAR16_SIZE);
+    BString16CopyD(_ptr, first->ptr, _fLen * CHAR16_SIZE);
+    BString16CopyD(_ptr + _fLen * CHAR16_SIZE, second->ptr, _sLen * CHAR16_SIZE);
     return _BString16CreateB(_ptr, _fLen + _sLen);
 }
 
@@ -273,14 +272,14 @@ PBString16 BString16Substring(const PBString16 str, const ULong start, const ULo
 {
     if (length <= 0 || start >= str->len || start < 0)
         return 0;
-    return BString16CreateB(str->ptr + start * CHAR_SIZE, length);
+    return BString16CreateB(str->ptr + start * CHAR16_SIZE, length);
 }
 
 PBString16 BString16SubstringA(const PBString16 str, const ULong start)
 {
     if (start >= str->len || start < 0)
         return 0;
-    return BString16CreateB(str->ptr + start * CHAR_SIZE, str->len - start);
+    return BString16CreateB(str->ptr + start * CHAR16_SIZE, str->len - start);
 }
 
 PBString16 BString16SubstringB(const PBString16 str, const ULong end)
@@ -294,7 +293,7 @@ PBString16 BString16SubstringC(const PBString16 str, const ULong start, const UL
 {
     if (end < start || end >= str->len || start < 0)
         return 0;
-    return BString16CreateB(str->ptr + start * CHAR_SIZE, end - start + 1);
+    return BString16CreateB(str->ptr + start * CHAR16_SIZE, end - start + 1);
 }
 
 Long BString16First(const restrict PBString16 str, const restrict PBString16 frt)
@@ -310,12 +309,12 @@ Long BString16First(const restrict PBString16 str, const restrict PBString16 frt
         return LF_StrCmpr(_ptr1, _ptr2, _len) - 1;
     _len -= _uLen + 1;
     
-    const ULong _a = (_uLen * CHAR_SIZE) / sizeof(ULong);
-    const ULong _b = (_uLen * CHAR_SIZE) % sizeof(ULong) / CHAR_SIZE;
+    const ULong _a = (_uLen * CHAR16_SIZE) / sizeof(ULong);
+    const ULong _b = (_uLen * CHAR16_SIZE) % sizeof(ULong) / CHAR16_SIZE;
 
     for (int x = 0; x < _len; x++) 
     {
-        if (LF_StrCmprA(_ptr1 + CHAR_SIZE * x, _ptr2, _uLen, _a, _b))
+        if (LF_StrCmprA(_ptr1 + CHAR16_SIZE * x, _ptr2, _uLen, _a, _b))
             return x;
     }
     return -1;
@@ -367,8 +366,8 @@ void BString16Trim(const restrict PBString16 str)
         str->len = 0;
         return;
     }
-    restrict PChar16 _char = BalAlloc(CHAR_SIZE * str->capacity);
-    BString16CopyD(_ptr + _trimStart * CHAR_SIZE, _ptr, _len * CHAR_SIZE);
+    restrict PChar16 _char = BalAlloc(CHAR16_SIZE * str->capacity);
+    BString16CopyD(_ptr + _trimStart * CHAR16_SIZE, _ptr, _len * CHAR16_SIZE);
     str->len = _len;
 }
 
@@ -395,7 +394,7 @@ void BString16TrimStart(const restrict PBString16 str)
         str->len = 0;
         return;
     }
-    BString16CopyD(_ptr + _start * CHAR_SIZE, _ptr, _len * CHAR_SIZE);
+    BString16CopyD(_ptr + _start * CHAR16_SIZE, _ptr, _len * CHAR16_SIZE);
     str->len = _len;
 }
 
@@ -442,13 +441,13 @@ void BString16Append(restrict PBString16 str, const restrict PBString16 apnd)
         return;
     if (str->capacity - str->len >= apnd->len)
     {
-        BString16CopyD(apnd->ptr, str->ptr + CHAR_SIZE * str->len, apnd->len * CHAR_SIZE);
+        BString16CopyD(apnd->ptr, str->ptr + CHAR16_SIZE * str->len, apnd->len * CHAR16_SIZE);
         str->len += apnd->len;
         return;
     }
     str->capacity = str->len + apnd->len + BSTRING_DEFAULT_CAPACITY_ADD;
-    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR_SIZE);
-    BString16CopyD(apnd->ptr, str->ptr + CHAR_SIZE * str->len, apnd->len * CHAR_SIZE);
+    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR16_SIZE);
+    BString16CopyD(apnd->ptr, str->ptr + CHAR16_SIZE * str->len, apnd->len * CHAR16_SIZE);
     str->len = str->capacity - BSTRING_DEFAULT_CAPACITY_ADD;
 }
 
@@ -456,14 +455,14 @@ void BString16AppendA(restrict PBString16 str, Char16 apnd)
 {
     if (str->capacity == 0)
         return;
-    if (str->capacity - str->len >= CHAR_SIZE)
+    if (str->capacity - str->len >= CHAR16_SIZE)
     {
         str->ptr[str->len] = apnd;
         str->len++;
         return;
     }
     str->capacity += BSTRING_DEFAULT_CAPACITY_ADD;
-    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR_SIZE);
+    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR16_SIZE);
     str->ptr[str->len] = apnd;
     str->len++;
 }
@@ -475,13 +474,13 @@ void BString16AppendB(restrict PBString16 str, restrict PChar16 apnd)
     ULong _len = LF_StrLength(apnd);
     if (str->capacity - str->len >= _len)
     {
-        BString16CopyD(apnd, str->ptr + CHAR_SIZE * str->len, _len * CHAR_SIZE);
+        BString16CopyD(apnd, str->ptr + CHAR16_SIZE * str->len, _len * CHAR16_SIZE);
         str->len += _len;
         return;
     }
     str->capacity = str->len + _len + BSTRING_DEFAULT_CAPACITY_ADD;
-    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR_SIZE);
-    BString16CopyD(apnd, str->ptr + CHAR_SIZE * str->len, _len * CHAR_SIZE);
+    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR16_SIZE);
+    BString16CopyD(apnd, str->ptr + CHAR16_SIZE * str->len, _len * CHAR16_SIZE);
     str->len = str->capacity - BSTRING_DEFAULT_CAPACITY_ADD;
 }
 
@@ -491,13 +490,13 @@ void BString16AppendC(restrict PBString16 str, restrict PChar16 apnd, const ULon
         return;
     if (str->capacity - str->len >= length)
     {
-        BString16CopyD(apnd, str->ptr + CHAR_SIZE * str->len, length * CHAR_SIZE);
+        BString16CopyD(apnd, str->ptr + CHAR16_SIZE * str->len, length * CHAR16_SIZE);
         str->len += length;
         return;
     }
     str->capacity = str->len + length + BSTRING_DEFAULT_CAPACITY_ADD;
-    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR_SIZE);
-    BString16CopyD(apnd, str->ptr + CHAR_SIZE * str->len, length * CHAR_SIZE);
+    str->ptr = BalReAlloc(str->ptr, str->capacity * CHAR16_SIZE);
+    BString16CopyD(apnd, str->ptr + CHAR16_SIZE * str->len, length * CHAR16_SIZE);
     str->len = str->capacity - BSTRING_DEFAULT_CAPACITY_ADD;
 }
 
@@ -506,7 +505,7 @@ void BString16Clear(restrict PBString16 str)
     if (str->capacity == 0)
         return;
     str->capacity = BSTRING_DEFAULT_CAPACITY;
-    str->ptr = BalReAlloc(str->ptr, BSTRING_DEFAULT_CAPACITY * CHAR_SIZE);
+    str->ptr = BalReAlloc(str->ptr, BSTRING_DEFAULT_CAPACITY * CHAR16_SIZE);
     str->len = 0;
 }
 
@@ -604,10 +603,10 @@ PPointerList BString16Split(const restrict PBString16 str, const Char16 wrd)
 PBString16 BString16Clone(const restrict PBString16 str)
 {
     PBString16 _str = BalAlloc(BSTRING_SIZE);
-    _str->ptr = BalAlloc((str->len + BSTRING_DEFAULT_CAPACITY_ADD) * CHAR_SIZE);
+    _str->ptr = BalAlloc((str->len + BSTRING_DEFAULT_CAPACITY_ADD) * CHAR16_SIZE);
     _str->capacity = str->len + BSTRING_DEFAULT_CAPACITY_ADD;
     _str->len = str->len;
-    BString16CopyD(str->ptr, _str->ptr, _str->len);
+    BString16CopyD(str->ptr, _str->ptr, _str->len * CHAR16_SIZE);
     return _str;
 }
 
@@ -621,8 +620,8 @@ void BString16Destroy(const restrict PBString16 str)
 
 Bool LOCAL_FUNCTION LF_StrCmpr(const restrict PChar16 first, const restrict PChar16 second, const ULong length)
 {
-    const ULong _a = (length * CHAR_SIZE) / sizeof(ULong);
-    const ULong _b = (length * CHAR_SIZE) % sizeof(ULong) / CHAR_SIZE;
+    const ULong _a = (length * CHAR16_SIZE) / sizeof(ULong);
+    const ULong _b = (length * CHAR16_SIZE) % sizeof(ULong) / CHAR16_SIZE;
     for (int x = 0; x < _a; x++)
     {
         if (((ULong*)first)[x] != ((ULong*)second)[x])
@@ -669,7 +668,7 @@ Bool LOCAL_FUNCTION LF_IsEmptyArea(const restrict PChar16 str, ULong start, cons
 
 void LOCAL_FUNCTION LF_UnsafeBStringAppend(restrict PBString16 str, restrict PBString16 apnd)
 {
-    BString16CopyD(str->ptr + str->len * CHAR_SIZE, apnd->ptr, apnd->len * CHAR_SIZE);
+    BString16CopyD(str->ptr + str->len * CHAR16_SIZE, apnd->ptr, apnd->len * CHAR16_SIZE);
     str->len += apnd->len;
 }
 

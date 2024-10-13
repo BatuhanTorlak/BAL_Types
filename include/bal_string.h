@@ -50,7 +50,7 @@ void BStringAppendC(PBString str, PChar apnd, const ULong length);
 void BStringCopy(const PBString from, const PBString to);
 void BStringCopyA(const PBString from, const PBString to, const ULong length);
 void BStringCopyB(const PBString from, const PBString to, const ULong startFrom, const ULong startTo, const ULong length);
-void BStringCopyC(const PByte from, PByte to, const ULong length);
+void BStringCopyC(const PChar from, PChar to, const ULong length);
 void BStringCopyD(const PByte from, PByte to, const ULong length);
 PPointerList BStringSplit(const PBString str, const Char wrd);
 //PPointerList BStringSplitA(const PBString str, const PChar wrdList, const ULong length);

@@ -1,17 +1,17 @@
 compile:
 	gcc -O3 -m64 -w -Iinclude -c source/*.c
 	nasm -f win64 -o bal_asm.o assembly/*.asm
-	ar rcs build/baltypes.a *.o
+	ar rcs build/wbaltypes.a *.o
 	rm *.o
 
 compiledll:
 	gcc -O3 -m64 -w -Iinclude -c source/*.c
 	nasm -f win64 -o bal_asm.o assembly/*.asm
-	gcc -shared -o build/baltypes.dll *.o
+	gcc -shared -o build/wbaltypes.dll *.o
 	rm *.o
 
 test:
-	gcc -O3 -m64 -Iinclude -g -ePenguEntry -o test.exe test.c build/baltypes.a
-	./test.exe
+	gcc -O3 -m64 -Iinclude -eBalEntry -g -o test.exe test.c build/wbaltypes.a
+	./test.exe asd asd 
 
 all: compile test
